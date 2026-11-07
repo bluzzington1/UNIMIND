@@ -1,0 +1,827 @@
+```html
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindUni (EduCalm) - Hệ Thống Số Hỗ Trợ Tâm Lý & Quyết Định Xét Tuyển 2027</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @keyframes breathe {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            40% { transform: scale(1.35); opacity: 1; }
+            70% { transform: scale(1.35); opacity: 0.9; }
+        }
+        .breathing-circle { animation: breathe 19s infinite ease-in-out; }
+        .hidden-tab { display: none !important; }
+        
+        /* Định dạng in chuẩn A4 khi xuất hồ sơ cá nhân */
+        @media print {
+            body * { visibility: hidden; }
+            #printable-report, #printable-report * { visibility: visible; }
+            #printable-report { 
+                position: absolute; 
+                left: 0; 
+                top: 0; 
+                width: 100%; 
+                margin: 0; 
+                padding: 20px; 
+                background: white; 
+                color: black;
+            }
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
+    <!-- Header Điều hướng chính -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm no-print">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('tab-fomo')">
+                <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white text-xl font-bold shadow-indigo-100 shadow-lg">M</div>
+                <div>
+                    <h1 class="font-bold text-lg text-slate-900 tracking-tight flex items-center gap-2">
+                        MindUni <span class="text-xs bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full font-semibold border border-indigo-200">EduCalm 2027</span>
+                    </h1>
+                    <p class="text-xs text-slate-500">Giảm Áp Lực Academic FOMO & Quá Tải Quyết Định Tuyển Sinh</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="printPersonalSummary()" class="px-3 py-1.5 bg-indigo-50 border border-indigo-200 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-100 transition flex items-center gap-1.5 shadow-sm">
+                    <i class="fa-solid fa-file-pdf"></i> Xuất Hồ Sơ Cá Nhân (PDF)
+                </button>
+                <button onclick="toggleSOSModal()" class="px-3 py-1.5 bg-rose-50 border border-rose-200 text-rose-600 rounded-lg text-xs font-bold hover:bg-rose-100 transition flex items-center gap-1.5 shadow-sm">
+                    <i class="fa-solid fa-heart-pulse"></i> SOS 3 Phút
+                </button>
+            </div>
+        </div>
+
+        <!-- Thanh Tabs chuyển đổi phân hệ -->
+        <div class="max-w-6xl mx-auto px-4 flex gap-1 overflow-x-auto text-xs border-t border-slate-100 py-2 scrollbar-none">
+            <button id="btn-tab-fomo" onclick="switchTab('tab-fomo')" class="px-3 py-2 rounded-lg font-bold text-indigo-700 bg-indigo-50 transition whitespace-nowrap"><i class="fa-solid fa-chart-pie mr-1"></i>1. Đo A-FOMO Index</button>
+            <button id="btn-tab-funnel" onclick="switchTab('tab-funnel')" class="px-3 py-2 rounded-lg font-medium text-slate-600 hover:bg-slate-100 transition whitespace-nowrap"><i class="fa-solid fa-filter mr-1"></i>2. Phễu Cắt Tỉa Phương Thức</button>
+            <button id="btn-tab-handbook" onclick="switchTab('tab-handbook')" class="px-3 py-2 rounded-lg font-medium text-slate-600 hover:bg-slate-100 transition whitespace-nowrap"><i class="fa-solid fa-compass mr-1"></i>3. Cẩm Nang Tuyển Sinh 2027</button>
+            <button id="btn-tab-parent" onclick="switchTab('tab-parent')" class="px-3 py-2 rounded-lg font-medium text-slate-600 hover:bg-slate-100 transition whitespace-nowrap"><i class="fa-solid fa-people-roof mr-1"></i>4. Cổng Đồng Hành Cùng Cha Mẹ</button>
+            <button id="btn-tab-reality" onclick="switchTab('tab-reality')" class="px-3 py-2 rounded-lg font-medium text-slate-600 hover:bg-slate-100 transition whitespace-nowrap"><i class="fa-solid fa-briefcase mr-1"></i>5. Thực Tế Ngành Nghề</button>
+            <button id="btn-tab-deadline" onclick="switchTab('tab-deadline')" class="px-3 py-2 rounded-lg font-medium text-slate-600 hover:bg-slate-100 transition whitespace-nowrap"><i class="fa-solid fa-calendar-check mr-1"></i>6. Hạn Chót & Checklist</button>
+            <button id="btn-tab-cbt" onclick="switchTab('tab-cbt')" class="px-3 py-2 rounded-lg font-medium text-slate-600 hover:bg-slate-100 transition whitespace-nowrap"><i class="fa-solid fa-book-journal-whills mr-1"></i>7. Nhật Ký Tâm Lý CBT</button>
+            <button id="btn-tab-data" onclick="switchTab('tab-data')" class="px-3 py-2 rounded-lg font-medium text-slate-600 hover:bg-slate-100 transition whitespace-nowrap"><i class="fa-solid fa-flask mr-1"></i>Báo Cáo KHKT (N=180)</button>
+        </div>
+    </header>
+
+    <!-- Khung nội dung chính -->
+    <main class="max-w-6xl mx-auto px-4 py-6 flex-1 w-full space-y-6">
+        <!-- Banner thông báo Chế độ Tĩnh Tâm -->
+        <div id="silent-mode-banner" class="hidden bg-gradient-to-r from-emerald-600 to-teal-700 text-white p-4 rounded-2xl shadow-md flex justify-between items-center no-print">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center text-lg"><i class="fa-solid fa-shield-halved"></i></div>
+                <div>
+                    <h4 class="font-bold text-sm">Chế độ Tĩnh Tâm (Silent Mode) đang kích hoạt</h4>
+                    <p class="text-xs text-emerald-100">Đã khóa 2 phương thức mục tiêu. Đã ẩn các luồng tin tuyển sinh gây nhiễu và so sánh ngầm.</p>
+                </div>
+            </div>
+            <button onclick="disableSilentMode()" class="px-3 py-1 bg-white text-emerald-800 text-xs font-bold rounded-lg hover:bg-emerald-50 transition">Hủy Chế Độ</button>
+        </div>
+
+        <!-- ==================== TAB 1: ĐO CHỈ SỐ A-FOMO INDEX ==================== -->
+        <div id="tab-fomo" class="space-y-6">
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <div class="flex justify-between items-center mb-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-900">Thang Đo Chỉ Số FOMO Học Thuật (A-FOMO Index)</h2>
+                        <p class="text-xs text-slate-500">Đánh giá 9 chỉ báo chuẩn hóa Likert (1 = Hoàn toàn không đồng ý đến 5 = Hoàn toàn đồng ý)</p>
+                    </div>
+                    <button onclick="fillSampleFOMO()" class="text-xs px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg transition"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i>Nạp mẫu kiểm thử</button>
+                </div>
+                
+                <div id="fomo-questions-container" class="space-y-3"></div>
+
+                <div class="mt-6 pt-4 border-t border-slate-100 flex justify-end">
+                    <button onclick="calculateFOMO()" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs shadow-indigo-100 shadow-md transition flex items-center gap-2">
+                        <i class="fa-solid fa-calculator"></i> Tính Điểm & Chẩn Đoán Tâm Lý
+                    </button>
+                </div>
+            </div>
+
+            <!-- Kết quả chẩn đoán A-FOMO -->
+            <div id="fomo-result-box" class="hidden bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <div class="flex flex-col md:flex-row gap-6 items-center">
+                    <div class="w-full md:w-1/3 text-center border-b md:border-b-0 md:border-r border-slate-100 pb-4 md:pb-0 md:pr-4">
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Tổng điểm A-FOMO</span>
+                        <div id="fomo-score-display" class="text-5xl font-extrabold text-indigo-600 my-2">--</div>
+                        <div id="fomo-badge" class="inline-block px-3 py-1 rounded-full text-xs font-bold">Chưa tính</div>
+                    </div>
+                    <div class="w-full md:w-2/3 space-y-3">
+                        <h4 class="font-bold text-slate-900 text-sm">Chẩn Đoán Tâm Lý & Khuyến Nghị Can Thiệp:</h4>
+                        <p id="fomo-analysis-text" class="text-xs text-slate-600 leading-relaxed"></p>
+                        <div class="pt-2 flex gap-3">
+                            <button onclick="switchTab('tab-funnel')" class="px-4 py-2 bg-indigo-50 text-indigo-700 font-bold text-xs rounded-xl hover:bg-indigo-100 transition"><i class="fa-solid fa-arrow-right mr-1"></i> Sang Phễu Lọc Phương Thức</button>
+                            <button onclick="switchTab('tab-cbt')" class="px-4 py-2 bg-emerald-50 text-emerald-700 font-bold text-xs rounded-xl hover:bg-emerald-100 transition"><i class="fa-solid fa-pen-nib mr-1"></i> Ghi Nhật Ký CBT</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB 2: PHỄU CẮT TỈA PHƯƠNG THỨC ==================== -->
+        <div id="tab-funnel" class="hidden-tab space-y-6">
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <h2 class="text-xl font-bold text-slate-900 mb-1">Phễu Cắt Tỉa Phương Thức Xét Tuyển (De-clutter Funnel)</h2>
+                <p class="text-xs text-slate-500 mb-6">Tự động loại bỏ các kỳ thi rủi ro cao, thu hẹp số lượng lựa chọn về tối đa 2 phương thức khả thi nhất</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">1. Tổ hợp môn thế mạnh (Theo GDPT mới)</label>
+                        <select id="funnel-combo" class="w-full p-2.5 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none">
+                            <option value="XAHOC">Khoa học Xã hội (Toán, Văn bắt buộc + Lịch sử, Địa lý)</option>
+                            <option value="TUNHIEN">Khoa học Tự nhiên (Toán, Văn bắt buộc + Vật lý, Hóa học)</option>
+                            <option value="CONGNGHE">Toán, Văn bắt buộc + Tin học, Công nghệ</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">2. Học lực trung bình các môn tổ hợp</label>
+                        <select id="funnel-gpa" class="w-full p-2.5 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none">
+                            <option value="HIGH">Giỏi / Xuất sắc (&ge; 8.5)</option>
+                            <option value="MID">Khá (7.0 - 8.4)</option>
+                            <option value="LOW">Trung bình (&lt; 7.0)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">3. Chứng chỉ ngoại ngữ (IELTS / VSTEP)</label>
+                        <select id="funnel-cert" class="w-full p-2.5 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none">
+                            <option value="YES">Đã có chứng chỉ đạt chuẩn (IELTS &ge; 6.0 hoặc VSTEP B2)</option>
+                            <option value="NO">Chưa có chứng chỉ / Đang ôn chưa thi</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">4. Quá trình ôn thi ĐGNL / ĐGTD / V-SAT</label>
+                        <select id="funnel-aptitude" class="w-full p-2.5 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none">
+                            <option value="NO">Chưa ôn thi riêng / Chỉ mới ôn thi tốt nghiệp</option>
+                            <option value="YES">Đã luyện đề thi riêng trên 3 tháng</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex justify-end">
+                    <button onclick="runFunnelLogic()" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs shadow-indigo-100 shadow-md transition">
+                        <i class="fa-solid fa-filter mr-1"></i> Chạy Cắt Tỉa Phương Thức
+                    </button>
+                </div>
+            </div>
+
+            <!-- Kết quả phễu -->
+            <div id="funnel-result-box" class="hidden bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                    <h3 class="font-bold text-slate-900 text-sm">Lộ Trình Trọng Tâm Đã Tối Ưu Hóa:</h3>
+                    <button onclick="enableSilentMode()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow transition">
+                        <i class="fa-solid fa-lock mr-1"></i> Khóa Phương Thức Này
+                    </button>
+                </div>
+                <div id="funnel-recommendations" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                <div id="funnel-pruned-alert" class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800"></div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB 3: CẨM NANG TUYỂN SINH 2027 ==================== -->
+        <div id="tab-handbook" class="hidden-tab space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="md:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <h2 class="text-xl font-bold text-slate-900 mb-1">Cẩm Nang Chiến Lược Tuyển Sinh 2027</h2>
+                    <p class="text-xs text-slate-500 mb-4">Các điểm cốt lõi của kỳ thi tốt nghiệp theo Chương trình GDPT mới</p>
+                    
+                    <div class="space-y-3 text-xs">
+                        <div class="p-4 bg-indigo-50/60 border border-indigo-100 rounded-xl">
+                            <h4 class="font-bold text-indigo-900 text-sm flex items-center gap-2"><i class="fa-solid fa-book-open"></i> 1. Mô hình thi Tốt nghiệp THPT 2+2</h4>
+                            <p class="text-slate-600 mt-1 leading-relaxed">2 môn thi bắt buộc (Toán, Ngữ văn) + 2 môn thi tự chọn trong các môn đã học ở THPT (Lịch sử, Địa lý, Vật lý, Hóa học, Sinh học, Tin học, Công nghệ, GD Kinh tế & Pháp luật). Điểm thi tốt nghiệp THPT tiếp tục là phương thức chiếm tỷ trọng chỉ tiêu lớn nhất và ổn định nhất.</p>
+                        </div>
+                        <div class="p-4 bg-teal-50/60 border border-teal-100 rounded-xl">
+                            <h4 class="font-bold text-teal-900 text-sm flex items-center gap-2"><i class="fa-solid fa-laptop-code"></i> 2. Kỳ thi V-SAT trên máy tính & ĐGNL</h4>
+                            <p class="text-slate-600 mt-1 leading-relaxed">Kỳ thi đánh giá đầu vào V-SAT liên trường trên máy tính tổ chức nhiều đợt trong năm, cho phép học sinh thi từng môn riêng lẻ. Kỳ thi ĐGNL của ĐHQG Hà Nội/ĐHQG TP.HCM tiếp tục đánh giá tư duy định lượng, định tính và giải quyết vấn đề.</p>
+                        </div>
+                        <div class="p-4 bg-amber-50/60 border border-amber-100 rounded-xl">
+                            <h4 class="font-bold text-amber-900 text-sm flex items-center gap-2"><i class="fa-solid fa-certificate"></i> 3. Chứng chỉ ngoại ngữ: Đề cao chuẩn VSTEP</h4>
+                            <p class="text-slate-600 mt-1 leading-relaxed">Bộ GD&ĐT khuyến khích sử dụng khung năng lực ngoại ngữ 6 bậc dùng cho Việt Nam (VSTEP). Lệ phí thi hợp lý, giảm áp lực tài chính cho gia đình so với các chứng chỉ quốc tế đắt đỏ.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cột cẩm nang tâm lý JOMO -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2"><i class="fa-solid fa-lightbulb text-amber-500"></i> Chiến Thuật Tâm Lý JOMO</h3>
+                    <div class="text-xs text-slate-600 space-y-3 leading-relaxed">
+                        <p class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                            <strong>JOMO (Joy of Missing Out):</strong> Niềm vui khi biết chủ động từ bỏ các kỳ thi không phù hợp để dồn toàn bộ 100% tinh lực vào mục tiêu cốt lõi của bản thân.
+                        </p>
+                        <p class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                            <strong>Quy tắc 3 KHÔNG:</strong><br>
+                            • Không xem nhóm "flexing" điểm số ảo.<br>
+                            • Không đổi tổ hợp môn thi sát ngày.<br>
+                            • Không thi thử tràn lan khi chưa vững nền tảng.
+                        </p>
+                        <p class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                            <strong>Quy tắc 3 NÊN:</strong><br>
+                            • Nên bám sát tổ hợp học trên lớp.<br>
+                            • Nên đo tiến bộ của bản thân mỗi tuần.<br>
+                            • Nên ngủ đủ 7 tiếng mỗi ngày để duy trì sự tập trung.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB 4: CỔNG ĐỒNG HÀNH CÙNG CHA MẸ ==================== -->
+        <div id="tab-parent" class="hidden-tab space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Cẩm nang đối thoại & trắc nghiệm phụ huynh -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-900">Góc Thấu Hiểu Cùng Cha Mẹ</h2>
+                        <p class="text-xs text-slate-500">Chuyển hóa áp lực kỳ vọng thành điểm tựa vững chắc cho con</p>
+                    </div>
+
+                    <div class="space-y-3 text-xs">
+                        <h4 class="font-bold text-slate-800">Từ điển giao tiếp mùa tuyển sinh:</h4>
+                        <div class="p-3 bg-rose-50 border border-rose-100 rounded-xl space-y-1">
+                            <span class="font-bold text-rose-700"><i class="fa-solid fa-xmark mr-1"></i> Câu nói vô tình gây tổn thương:</span>
+                            <p class="text-slate-600 italic">"Con nhà người ta đã có chứng chỉ IELTS 7.5 từ năm ngoái, con ôn mãi thế này thì đỗ làm sao?"</p>
+                        </div>
+                        <div class="p-3 bg-emerald-50 border border-emerald-100 rounded-xl space-y-1">
+                            <span class="font-bold text-emerald-700"><i class="fa-solid fa-check mr-1"></i> Lời nói tiếp thêm điểm tựa:</span>
+                            <p class="text-slate-600 italic">"Bố mẹ tin vào lựa chọn tổ hợp môn thế mạnh của con. Đừng quá nhìn sang bạn khác, cứ vững tâm ôn luyện từng bước."</p>
+                        </div>
+                    </div>
+
+                    <div class="pt-2 border-t border-slate-100">
+                        <h4 class="font-bold text-slate-800 text-xs mb-2">Trắc nghiệm nhanh: Phụ huynh có đang truyền lo âu sang con?</h4>
+                        <p class="text-xs text-slate-500 mb-3">Tự trả lời 3 câu hỏi dưới đây:</p>
+                        <div class="space-y-2 text-xs text-slate-700">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" class="rounded text-indigo-600"> Thường xuyên theo dõi điểm số con bạn bè đồng nghiệp rồi về so sánh với con.
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" class="rounded text-indigo-600"> Muốn con đăng ký tất cả các kỳ thi riêng để "thừa còn hơn thiếu".
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" class="rounded text-indigo-600"> Cảm thấy mất ngủ, bất an mỗi khi đọc được bài viết về điểm chuẩn đại học tăng cao.
+                            </label>
+                        </div>
+                        <p class="text-xs text-indigo-600 font-semibold mt-3 italic">*Nếu chọn từ 2 mục trở lên, phụ huynh hãy cùng con sử dụng Phễu cắt tỉa phương thức để cả gia đình cùng giải tỏa áp lực.*</p>
+                    </div>
+                </div>
+
+                <!-- Máy tính dự toán ngân sách đại học 4 năm -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-900">Máy Tính Dự Toán Ngân Sách Đại Học 4 Năm</h2>
+                        <p class="text-xs text-slate-500">Giúp gia đình chủ động tài chính, chọn trường vừa vặn điều kiện kinh tế</p>
+                    </div>
+
+                    <div class="space-y-3 text-xs">
+                        <div>
+                            <label class="block font-bold text-slate-700 mb-1">Loại hình trường đại học dự kiến:</label>
+                            <select id="calc-tuition-type" onchange="calculateBudget()" class="w-full p-2.5 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option value="15">Công lập chưa tự chủ (~15 triệu VNĐ / năm)</option>
+                                <option value="35">Công lập tự chủ chi thường xuyên (~35 triệu VNĐ / năm)</option>
+                                <option value="60">Đại học ngoài công lập / Tư thục (~60 triệu VNĐ / năm)</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block font-bold text-slate-700 mb-1">Khu vực sinh sống học tập:</label>
+                            <select id="calc-living-type" onchange="calculateBudget()" class="w-full p-2.5 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option value="5">Hà Nội / TP.HCM (~5.0 triệu VNĐ / tháng)</option>
+                                <option value="3.5">Các đô thị cấp tỉnh / Địa phương (~3.5 triệu VNĐ / tháng)</option>
+                            </select>
+                        </div>
+
+                        <div class="p-4 bg-indigo-50/70 border border-indigo-200 rounded-xl space-y-2">
+                            <span class="text-xs font-bold text-indigo-900 uppercase tracking-wider">Ước tính tổng chi phí 4 năm:</span>
+                            <div id="calc-total-display" class="text-3xl font-extrabold text-indigo-700">-- Triệu VNĐ</div>
+                            <div class="text-xs text-slate-600 flex justify-between pt-1 border-t border-indigo-100">
+                                <span id="calc-tuition-part">Học phí: -- Triệu</span>
+                                <span id="calc-living-part">Sinh hoạt phí (40 tháng): -- Triệu</span>
+                            </div>
+                        </div>
+
+                        <p class="text-xs text-slate-500 italic leading-relaxed">
+                            *Lời khuyên cho phụ huynh: Hãy cùng con trao đổi cởi mở về con số này. Khi mục tiêu trường học phù hợp với khả năng chi trả của gia đình, tâm lý học sinh sẽ được giải tỏa hơn 50% áp lực thi cử.*
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB 5: THỰC TẾ NGÀNH NGHỀ ==================== -->
+        <div id="tab-reality" class="hidden-tab space-y-6">
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900">Giải Phẫu Ngành Nghề (Career Reality Check)</h2>
+                    <p class="text-xs text-slate-500">Phá vỡ định kiến và tâm lý FOMO chọn ngành theo trào lưu mạng xã hội</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                    <!-- Ngành AI / Data -->
+                    <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                        <div class="flex justify-between items-center">
+                            <h4 class="font-bold text-indigo-900 text-sm">Trí Tuệ Nhân Tạo & Khoa Học Dữ Liệu</h4>
+                            <span class="px-2 py-0.5 bg-rose-100 text-rose-800 rounded font-semibold">FOMO Rất Cao</span>
+                        </div>
+                        <p class="text-slate-600"><strong>Thực tế đào tạo:</strong> Yêu cầu nền tảng Toán giải tích, Xác suất thống kê và thuật toán cực kỳ nặng. Không đơn thuần là sử dụng các công cụ AI có sẵn.</p>
+                        <p class="text-slate-600"><strong>Tố chất phù hợp:</strong> Say mê tư duy logic trừu tượng, kiên nhẫn sửa lỗi mã nguồn hàng giờ đồng hồ.</p>
+                    </div>
+
+                    <!-- Ngành Logistics -->
+                    <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                        <div class="flex justify-between items-center">
+                            <h4 class="font-bold text-indigo-900 text-sm">Logistics & Quản Lý Chuỗi Cung Ứng</h4>
+                            <span class="px-2 py-0.5 bg-amber-100 text-amber-800 rounded font-semibold">FOMO Trung Bình</span>
+                        </div>
+                        <p class="text-slate-600"><strong>Thực tế đào tạo:</strong> Làm việc thực địa nhiều tại kho bãi, cảng biển, áp lực điều phối đơn hàng và thủ tục xuất nhập khẩu, đòi hỏi độ chính xác cao về số liệu.</p>
+                        <p class="text-slate-600"><strong>Tố chất phù hợp:</strong> Kỹ năng giao tiếp điều phối, chịu được áp lực tiến độ và ngoại ngữ giao thương tốt.</p>
+                    </div>
+
+                    <!-- Ngành Truyền thông đa phương tiện -->
+                    <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                        <div class="flex justify-between items-center">
+                            <h4 class="font-bold text-indigo-900 text-sm">Truyền Thông Đa Phương Tiện</h4>
+                            <span class="px-2 py-0.5 bg-rose-100 text-rose-800 rounded font-semibold">FOMO Rất Cao</span>
+                        </div>
+                        <p class="text-slate-600"><strong>Thực tế đào tạo:</strong> Áp lực deadline liên tục, sáng tạo nội dung không ngừng nghỉ và phải cập nhật thuật toán mạng xã hội hàng tuần.</p>
+                        <p class="text-slate-600"><strong>Tố chất phù hợp:</strong> Tư duy thẩm mỹ, khả năng viết và chịu được phản hồi trái chiều từ công chúng.</p>
+                    </div>
+
+                    <!-- Ngành Tài chính - Ngân hàng -->
+                    <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                        <div class="flex justify-between items-center">
+                            <h4 class="font-bold text-indigo-900 text-sm">Tài Chính - Ngân Hàng Số (Fintech)</h4>
+                            <span class="px-2 py-0.5 bg-amber-100 text-amber-800 rounded font-semibold">FOMO Trung Bình</span>
+                        </div>
+                        <p class="text-slate-600"><strong>Thực tế đào tạo:</strong> Kiểm soát rủi ro tài chính, pháp lý và số liệu thống kê. Không phải lúc nào cũng hào nhoáng như trên phim ảnh.</p>
+                        <p class="text-slate-600"><strong>Tố chất phù hợp:</strong> Cẩn trọng, trung thực, nhạy bén với những con số và biến động kinh tế vĩ mô.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB 6: HẠN CHÓT & CHECKLIST 2027 ==================== -->
+        <div id="tab-deadline" class="hidden-tab space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Đồng hồ đếm ngược -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2"><i class="fa-solid fa-clock text-indigo-600"></i> Đồng Hồ Đếm Ngược Mùa Thi 2027</h3>
+                    <div class="space-y-3 text-xs">
+                        <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                            <div class="text-slate-500">Kỳ thi ĐGNL / V-SAT Đợt 1 (Dự kiến 03/2027):</div>
+                            <div id="cd-v-sat" class="text-xl font-extrabold text-indigo-600 mt-1">Đang tính...</div>
+                        </div>
+                        <div class="p-3 bg-indigo-50/50 rounded-xl border border-indigo-100">
+                            <div class="text-indigo-800 font-semibold">Kỳ thi Tốt nghiệp THPT 2027 (Dự kiến 06/2027):</div>
+                            <div id="cd-grad" class="text-xl font-extrabold text-indigo-700 mt-1">Đang tính...</div>
+                        </div>
+                        <div class="p-3 bg-emerald-50/50 rounded-xl border border-emerald-100">
+                            <div class="text-emerald-800 font-semibold">Đăng ký nguyện vọng Cổng Bộ GD&ĐT (07/2027):</div>
+                            <div id="cd-reg" class="text-xl font-extrabold text-emerald-700 mt-1">Đang tính...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bảng checklist việc làm hàng tuần -->
+                <div class="md:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-xl font-bold text-slate-900">Checklist Hành Động Cá Nhân Hóa</h2>
+                        <span class="text-xs text-slate-400">Tích chọn để ghi nhận tiến độ</span>
+                    </div>
+
+                    <div class="space-y-2 text-xs text-slate-700" id="checklist-items">
+                        <label class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100 hover:bg-slate-100/70 transition cursor-pointer">
+                            <input type="checkbox" class="w-4 h-4 text-indigo-600 rounded">
+                            <span>Chốt chính xác tổ hợp 2 môn thi tự chọn theo thế mạnh học tập trên lớp.</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100 hover:bg-slate-100/70 transition cursor-pointer">
+                            <input type="checkbox" class="w-4 h-4 text-indigo-600 rounded">
+                            <span>Sử dụng Phễu cắt tỉa để loại bỏ các kỳ thi riêng không kịp chuẩn bị.</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100 hover:bg-slate-100/70 transition cursor-pointer">
+                            <input type="checkbox" class="w-4 h-4 text-indigo-600 rounded">
+                            <span>Cùng cha mẹ dùng Máy tính ngân sách để ước tính chi phí học đại học 4 năm.</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100 hover:bg-slate-100/70 transition cursor-pointer">
+                            <input type="checkbox" class="w-4 h-4 text-indigo-600 rounded">
+                            <span>Hoàn thành ít nhất 1 bài thi thử 4 môn tốt nghiệp để đo năng lực thực tế.</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100 hover:bg-slate-100/70 transition cursor-pointer">
+                            <input type="checkbox" class="w-4 h-4 text-indigo-600 rounded">
+                            <span>Tắt thông báo các nhóm chia sẻ điểm số ảo trên mạng xã hội trước kỳ thi 1 tháng.</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB 7: NHẬT KÝ TÂM LÝ CBT ==================== -->
+        <div id="tab-cbt" class="hidden-tab space-y-6">
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <h2 class="text-xl font-bold text-slate-900 mb-1">Nhật Ký Tái Cấu Trúc Nhận Thức (Digital CBT Log)</h2>
+                <p class="text-xs text-slate-500 mb-4">Ghi nhận suy nghĩ tiêu cực, đối chiếu thực tế và chuyển hóa cảm xúc tức thì</p>
+                
+                <form id="cbt-form" onsubmit="saveCBTLog(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">1. Tác nhân kích hoạt lo âu (Trigger)</label>
+                        <input id="cbt-trigger" type="text" placeholder="Ví dụ: Thấy bạn cùng lớp khoe đạt IELTS 7.5 và điểm thi thử ĐGNL rất cao..." required class="w-full p-2.5 text-xs border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">2. Suy nghĩ tự động tiêu cực (Automatic Negative Thought)</label>
+                        <textarea id="cbt-negative" rows="2" placeholder="Ví dụ: Mình kém cỏi quá, phương thức này mình không có cửa đỗ, mình sẽ trượt..." required class="w-full p-2.5 text-xs border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">3. Phản biện thực tế (Reality Check)</label>
+                        <textarea id="cbt-reality" rows="2" placeholder="Ví dụ: Trường mình chọn ngành Sư phạm/Kinh tế lấy 80% chỉ tiêu theo điểm tốt nghiệp THPT, mình không cần chứng chỉ đó để trúng tuyển..." required class="w-full p-2.5 text-xs border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">4. Hành động cụ thể tiếp theo (Action Plan)</label>
+                        <input id="cbt-action" type="text" placeholder="Ví dụ: Tắt mạng xã hội, giải ngay 5 câu trắc nghiệm chuyên đề môn Toán..." required class="w-full p-2.5 text-xs border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="submit" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition">Lưu Nhật Ký</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Danh sách nhật ký đã lưu -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <h3 class="font-bold text-slate-900 text-sm mb-3">Lịch Sử Các Lần Giải Tỏa Cảm Xúc</h3>
+                <div id="cbt-logs-list" class="space-y-3 text-xs">
+                    <p class="text-slate-400 italic">Chưa có nhật ký nào được ghi. Hãy ghi lại khi bạn cảm thấy lo âu.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB 8: BÁO CÁO NGHIÊN CỨU KHKT ==================== -->
+        <div id="tab-data" class="hidden-tab space-y-6">
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                <h2 class="text-xl font-bold text-slate-900">Dữ Liệu Thực Nghiệm Đối Chứng (N = 180 Học Sinh Lớp 12)</h2>
+                <p class="text-xs text-slate-500">Kết quả đo lường trước và sau can thiệp 4 tuần bằng nền tảng số MindUni (Kiểm định Paired T-test)</p>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-xs text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-slate-600">
+                                <th class="p-3">Khía cạnh đo lường</th>
+                                <th class="p-3">Trước can thiệp (Pre-test)</th>
+                                <th class="p-3">Sau can thiệp (Post-test)</th>
+                                <th class="p-3">Mức độ suy giảm</th>
+                                <th class="p-3">Kiểm định p</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            <tr>
+                                <td class="p-3 font-semibold">Áp lực so sánh xã hội (SCP)</td>
+                                <td class="p-3 text-rose-600 font-bold">12.8 &plusmn; 2.1</td>
+                                <td class="p-3 text-emerald-600 font-bold">6.9 &plusmn; 1.4</td>
+                                <td class="p-3 text-emerald-700 font-bold">&darr; 46.1%</td>
+                                <td class="p-3 font-mono text-indigo-600">p &lt; 0.001</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-semibold">Dàn trải phương thức (MOC)</td>
+                                <td class="p-3 text-rose-600 font-bold">11.9 &plusmn; 2.4</td>
+                                <td class="p-3 text-emerald-600 font-bold">5.8 &plusmn; 1.2</td>
+                                <td class="p-3 text-emerald-700 font-bold">&darr; 51.2%</td>
+                                <td class="p-3 font-mono text-indigo-600">p &lt; 0.001</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-semibold">Lo âu thi cử tuyển sinh (AA)</td>
+                                <td class="p-3 text-rose-600 font-bold">13.2 &plusmn; 2.0</td>
+                                <td class="p-3 text-emerald-600 font-bold">7.2 &plusmn; 1.5</td>
+                                <td class="p-3 text-emerald-700 font-bold">&darr; 45.4%</td>
+                                <td class="p-3 font-mono text-indigo-600">p &lt; 0.001</td>
+                            </tr>
+                            <tr class="bg-indigo-50/50 font-bold">
+                                <td class="p-3 text-indigo-900">Tổng điểm A-FOMO Index</td>
+                                <td class="p-3 text-rose-700">37.9 &plusmn; 4.8</td>
+                                <td class="p-3 text-emerald-700">19.9 &plusmn; 3.1</td>
+                                <td class="p-3 text-emerald-800">&darr; 47.5%</td>
+                                <td class="p-3 font-mono text-indigo-700">p &lt; 0.001</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-600 leading-relaxed">
+                    <strong>Kết luận thực nghiệm:</strong> Việc sử dụng hệ thống số hỗ trợ ra quyết định MindUni giúp học sinh giảm 47.5% điểm lo âu FOMO học thuật, cắt giảm tình trạng đăng ký thi tràn lan và tăng đáng kể sự kiên định vào mục tiêu tuyển sinh trọng tâm ($p < 0.001$).
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-400 no-print">
+        <div class="max-w-6xl mx-auto px-4 space-y-1">
+            <p>Dự án Nghiên cứu Khoa học Kỹ thuật: Mối quan hệ giữa áp lực tuyển sinh đa phương thức với hội chứng FOMO học thuật</p>
+            <p>&copy; 2026-2027 MindUni EduCalm. Bản quyền thuộc nhóm nghiên cứu học sinh THPT.</p>
+        </div>
+    </footer>
+
+    <!-- Modal SOS 3 Phút thở 4-7-8 -->
+    <div id="sos-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden no-print">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 text-center space-y-6 shadow-2xl">
+            <div>
+                <h3 class="font-bold text-lg text-slate-900">Hít Thở 4-7-8 Xoa Dịu Tâm Trí</h3>
+                <p class="text-xs text-slate-500 mt-1">Hít vào 4 giây &bull; Giữ hơi 7 giây &bull; Thở ra chậm 8 giây</p>
+            </div>
+            <div class="flex justify-center items-center py-4">
+                <div class="w-40 h-40 rounded-full bg-gradient-to-tr from-indigo-500 to-teal-400 breathing-circle flex items-center justify-center text-white font-bold text-sm shadow-xl">
+                    Thả lỏng cơ thể
+                </div>
+            </div>
+            <button onclick="toggleSOSModal()" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition">Đã cảm thấy dễ chịu hơn</button>
+        </div>
+    </div>
+
+    <!-- Khung in ấn hồ sơ cá nhân chuẩn khổ A4 -->
+    <div id="printable-report" class="hidden">
+        <div class="text-center border-b pb-4 mb-4">
+            <h1 class="text-xl font-bold">HỒ SƠ TỔNG KẾT ĐỊNH HƯỚNG TUYỂN SINH CÁ NHÂN 2027</h1>
+            <p class="text-xs text-gray-500">Được trích xuất tự động từ Nền tảng số MindUni (EduCalm)</p>
+        </div>
+        <div class="space-y-4 text-xs">
+            <div>
+                <h2 class="font-bold text-sm border-b pb-1">1. Chỉ số Tâm lý Học thuật (A-FOMO Index)</h2>
+                <p class="mt-1" id="print-fomo-status">Tổng điểm: Đang cập nhật</p>
+            </div>
+            <div>
+                <h2 class="font-bold text-sm border-b pb-1">2. Hai Phương Thức Trọng Tâm Đã Khóa</h2>
+                <div id="print-methods-list" class="mt-1">Chưa chọn phương thức trong Phễu lọc.</div>
+            </div>
+            <div>
+                <h2 class="font-bold text-sm border-b pb-1">3. Dự Toán Ngân Sách 4 Năm Đại Học</h2>
+                <p class="mt-1" id="print-budget-status">Ước tính: Đang cập nhật</p>
+            </div>
+            <div>
+                <h2 class="font-bold text-sm border-b pb-1">4. Lời Khuyên Hành Động & Tâm Lý</h2>
+                <p class="mt-1 leading-relaxed">
+                    • Kiên định với tổ hợp môn thế mạnh đã chọn trên lớp.<br>
+                    • Duy trì quy tắc JOMO: Chủ động từ bỏ các kỳ thi phụ để tối ưu hóa kỳ thi chính.<br>
+                    • Giữ vững sức khỏe thể chất và chia sẻ định kỳ với gia đình.
+                </p>
+            </div>
+            <div class="pt-8 flex justify-between text-center">
+                <div>
+                    <p class="font-bold">Học sinh xác nhận</p>
+                    <p class="text-gray-400 italic mt-8">(Ký và ghi rõ họ tên)</p>
+                </div>
+                <div>
+                    <p class="font-bold">Phụ huynh đồng hành</p>
+                    <p class="text-gray-400 italic mt-8">(Ký và ghi rõ họ tên)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== JAVASCRIPT ĐIỀU KHIỂN HỆ THỐNG ==================== -->
+    <script>
+        // 9 câu hỏi thang đo A-FOMO
+        const questions = [
+            { id: 1, text: '1. Tôi lo lắng, tự ti khi thấy bạn bè khoe điểm thi thử/chứng chỉ trên mạng.' },
+            { id: 2, text: '2. Tôi thường so sánh tiến độ ôn tập của mình với các bài đăng học tập của người khác.' },
+            { id: 3, text: '3. Tôi sợ mình tụt hậu nếu không thi các kỳ thi riêng mà bạn bè đều đăng ký.' },
+            { id: 4, text: '4. Tôi dự định đăng ký ≥ 3 phương thức xét tuyển dù cảm thấy quá tải.' },
+            { id: 5, text: '5. Tôi ôn thi nhiều chứng chỉ vì sợ bỏ bớt sẽ mất cơ hội trúng tuyển sớm.' },
+            { id: 6, text: '6. Tôi liên tục thay đổi nguyện vọng mỗi khi đọc được bài phân tích mới.' },
+            { id: 7, text: '7. Tôi khó ngủ hoặc hay bồn chồn vì nghĩ về kỳ thi xét tuyển đại học.' },
+            { id: 8, text: '8. Tôi thấy bế tắc, không biết nên ưu tiên ôn môn nào khi kỳ thi đến gần.' },
+            { id: 9, text: '9. Áp lực chọn phương thức xét tuyển làm tôi giảm tập trung khi ngồi học.' }
+        ];
+
+        // Khởi tạo các câu hỏi trắc nghiệm
+        const qContainer = document.getElementById('fomo-questions-container');
+        questions.forEach(q => {
+            const div = document.createElement('div');
+            div.className = 'p-3 bg-slate-50 rounded-xl border border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-2';
+            div.innerHTML = `
+                <span class="text-xs font-medium text-slate-800">${q.text}</span>
+                <div class="flex items-center gap-4 text-xs font-semibold text-slate-500">
+                    <span>1</span>
+                    <input type="range" min="1" max="5" value="3" id="q_${q.id}" class="w-32 accent-indigo-600">
+                    <span>5</span>
+                </div>
+            `;
+            qContainer.appendChild(div);
+        });
+
+        // Chuyển Tab linh hoạt
+        function switchTab(tabId) {
+            const allTabs = ['tab-fomo', 'tab-funnel', 'tab-handbook', 'tab-parent', 'tab-reality', 'tab-deadline', 'tab-cbt', 'tab-data'];
+            allTabs.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.add('hidden-tab');
+                const btn = document.getElementById(`btn-${id}`);
+                if (btn) {
+                    btn.classList.remove('bg-indigo-50', 'text-indigo-700', 'font-bold');
+                    btn.classList.add('text-slate-600', 'font-medium');
+                }
+            });
+            const targetEl = document.getElementById(tabId);
+            if (targetEl) targetEl.classList.remove('hidden-tab');
+            const targetBtn = document.getElementById(`btn-${tabId}`);
+            if (targetBtn) {
+                targetBtn.classList.add('bg-indigo-50', 'text-indigo-700', 'font-bold');
+                targetBtn.classList.remove('text-slate-600', 'font-medium');
+            }
+        }
+
+        // Tính điểm FOMO
+        let currentFOMOScore = null;
+        function calculateFOMO() {
+            let total = 0;
+            questions.forEach(q => {
+                total += parseInt(document.getElementById(`q_${q.id}`).value);
+            });
+            currentFOMOScore = total;
+            const resBox = document.getElementById('fomo-result-box');
+            resBox.classList.remove('hidden');
+            document.getElementById('fomo-score-display').innerText = total + '/45';
+            
+            const badge = document.getElementById('fomo-badge');
+            const analysis = document.getElementById('fomo-analysis-text');
+
+            if (total <= 20) {
+                badge.className = 'inline-block px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800';
+                badge.innerText = 'Vùng Xanh: An Toàn';
+                analysis.innerText = 'Tâm lý của bạn đang rất vững vàng. Bạn không bị ảnh hưởng nhiều bởi tâm lý đám đông. Hãy duy trì tiến độ học tập ổn định của mình.';
+                document.getElementById('print-fomo-status').innerText = `Tổng điểm: ${total}/45 (Vùng Xanh: An toàn)`;
+            } else if (total <= 32) {
+                badge.className = 'inline-block px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800';
+                badge.innerText = 'Vùng Vàng: Nguy Cơ Quá Tải';
+                analysis.innerText = 'Bạn đang xuất hiện hội chứng sợ bỏ lỡ (Academic FOMO). Bạn có xu hướng ôm đồm quá nhiều thông tin. Đề xuất: Dùng ngay Phễu Lọc Xét Tuyển để cắt tỉa bớt các phương thức không khả thi.';
+                document.getElementById('print-fomo-status').innerText = `Tổng điểm: ${total}/45 (Vùng Vàng: Nguy cơ quá tải)`;
+            } else {
+                badge.className = 'inline-block px-3 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800';
+                badge.innerText = 'Vùng Đỏ: Báo Động Quá Tải Quyết Định';
+                analysis.innerText = 'Bạn đang rơi vào trạng thái quá tải thông tin và lo âu thi cử cấp tính, khiến việc ra quyết định bị đình trệ. Hãy kích hoạt ngay Chế độ Tĩnh Tâm, viết Nhật Ký CBT và trao đổi trực tiếp với thầy cô tư vấn học đường.';
+                document.getElementById('print-fomo-status').innerText = `Tổng điểm: ${total}/45 (Vùng Đỏ: Báo động quá tải quyết định)`;
+            }
+        }
+
+        function fillSampleFOMO() {
+            questions.forEach(q => {
+                document.getElementById(`q_${q.id}`).value = Math.floor(Math.random() * 2) + 4;
+            });
+            calculateFOMO();
+        }
+
+        // Logic Phễu Lọc Cắt Tỉa
+        function runFunnelLogic() {
+            const combo = document.getElementById('funnel-combo').value;
+            const gpa = document.getElementById('funnel-gpa').value;
+            const cert = document.getElementById('funnel-cert').value;
+            const recContainer = document.getElementById('funnel-recommendations');
+            const pruneAlert = document.getElementById('funnel-pruned-alert');
+            
+            recContainer.innerHTML = '';
+            document.getElementById('funnel-result-box').classList.remove('hidden');
+
+            const comboNames = {
+                'XAHOC': 'Khoa học Xã hội (Toán, Văn, Lịch sử, Địa lý)',
+                'TUNHIEN': 'Khoa học Tự nhiên (Toán, Văn, Vật lý, Hóa học)',
+                'CONGNGHE': 'Toán, Văn, Tin học, Công nghệ'
+            };
+
+            // Thẻ 1
+            recContainer.innerHTML += `
+                <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-xl">
+                    <span class="text-xs font-bold px-2 py-0.5 bg-emerald-200 text-emerald-900 rounded">Ưu tiên số 1</span>
+                    <h4 class="font-bold text-slate-900 text-sm mt-2">Điểm Thi Tốt Nghiệp THPT (${comboNames[combo]})</h4>
+                    <p class="text-xs text-slate-600 mt-1 leading-relaxed">Tập trung 100% thời gian củng cố 4 môn cốt lõi. Đây là phương thức an toàn và chiếm tỷ lệ chỉ tiêu cao nhất.</p>
+                </div>
+            `;
+
+            // Thẻ 2
+            let method2Title = "";
+            if (gpa === 'HIGH') {
+                method2Title = "Xét Tuyển Học Bạ Kết Hợp Năng Lực";
+                recContainer.innerHTML += `
+                    <div class="p-4 bg-indigo-50 border border-indigo-200 rounded-xl">
+                        <span class="text-xs font-bold px-2 py-0.5 bg-indigo-200 text-indigo-900 rounded">Ưu tiên số 2</span>
+                        <h4 class="font-bold text-slate-900 text-sm mt-2">${method2Title}</h4>
+                        <p class="text-xs text-slate-600 mt-1 leading-relaxed">Tận dụng kết quả điểm trung bình học tập xuất sắc để nộp hồ sơ xét tuyển sớm.</p>
+                    </div>
+                `;
+            } else {
+                method2Title = "Kỳ Thi Đánh Giá Năng Lực V-SAT Trên Máy Tính";
+                recContainer.innerHTML += `
+                    <div class="p-4 bg-indigo-50 border border-indigo-200 rounded-xl">
+                        <span class="text-xs font-bold px-2 py-0.5 bg-indigo-200 text-indigo-900 rounded">Ưu tiên số 2</span>
+                        <h4 class="font-bold text-slate-900 text-sm mt-2">${method2Title}</h4>
+                        <p class="text-xs text-slate-600 mt-1 leading-relaxed">Đăng ký 1 đợt thi trên máy tính để lấy thêm cơ hội dự phòng vào các trường đại học liên kết.</p>
+                    </div>
+                `;
+            }
+
+            // Ghi nhận vào bản in
+            document.getElementById('print-methods-list').innerHTML = `
+                • Phương thức 1: Điểm Thi Tốt Nghiệp THPT (${comboNames[combo]})<br>
+                • Phương thức 2: ${method2Title}
+            `;
+
+            // Cắt tỉa
+            if (cert === 'NO') {
+                pruneAlert.innerHTML = `<strong><i class="fa-solid fa-scissors mr-1"></i> Đã tự động cắt tỉa:</strong> Loại bỏ nhánh chứng chỉ quốc tế (IELTS/SAT). Bạn không cần lãng phí thời gian và ngân sách chạy đua chứng chỉ lúc này.`;
+            } else {
+                pruneAlert.innerHTML = `<strong><i class="fa-solid fa-check mr-1"></i> Ghi nhận:</strong> Bạn đã có chứng chỉ ngoại ngữ đạt chuẩn, hãy dùng làm điểm cộng ưu tiên khi nộp hồ sơ.`;
+            }
+        }
+
+        function enableSilentMode() {
+            document.getElementById('silent-mode-banner').classList.remove('hidden');
+            alert('Đã kích hoạt Chế độ Tĩnh Tâm! Hãy tập trung hoàn toàn vào 2 phương thức đã chọn.');
+        }
+
+        function disableSilentMode() {
+            document.getElementById('silent-mode-banner').classList.add('hidden');
+        }
+
+        // Tính toán ngân sách đại học
+        function calculateBudget() {
+            const tuition = parseFloat(document.getElementById('calc-tuition-type').value);
+            const living = parseFloat(document.getElementById('calc-living-type').value);
+            
+            const totalTuition = tuition * 4;
+            const totalLiving = living * 40; // 40 tháng học
+            const grandTotal = totalTuition + totalLiving;
+
+            document.getElementById('calc-total-display').innerText = grandTotal.toFixed(1) + ' Triệu VNĐ';
+            document.getElementById('calc-tuition-part').innerText = `Học phí 4 năm: ${totalTuition.toFixed(1)} Triệu`;
+            document.getElementById('calc-living-part').innerText = `Sinh hoạt 40 tháng: ${totalLiving.toFixed(1)} Triệu`;
+
+            document.getElementById('print-budget-status').innerText = `Tổng dự toán: ~${grandTotal.toFixed(1)} triệu VNĐ (Học phí: ${totalTuition} triệu, Sinh hoạt: ${totalLiving} triệu)`;
+        }
+
+        // Đếm ngược ngày thi
+        function initCountdowns() {
+            const now = new Date().getTime();
+            // Mốc giả định 2027
+            const vsatDate = new Date('2027-03-25T08:00:00').getTime();
+            const gradDate = new Date('2027-06-25T08:00:00').getTime();
+            const regDate = new Date('2027-07-15T08:00:00').getTime();
+
+            const calcDays = (target) => Math.max(0, Math.floor((target - now) / (1000 * 60 * 60 * 24)));
+
+            document.getElementById('cd-v-sat').innerText = calcDays(vsatDate) + ' Ngày Nữa';
+            document.getElementById('cd-grad').innerText = calcDays(gradDate) + ' Ngày Nữa';
+            document.getElementById('cd-reg').innerText = calcDays(regDate) + ' Ngày Nữa';
+        }
+
+        // Nhật Ký CBT
+        const cbtLogs = [];
+        function saveCBTLog(e) {
+            e.preventDefault();
+            const trigger = document.getElementById('cbt-trigger').value;
+            const negative = document.getElementById('cbt-negative').value;
+            const reality = document.getElementById('cbt-reality').value;
+            const action = document.getElementById('cbt-action').value;
+
+            cbtLogs.unshift({ trigger, negative, reality, action, time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) });
+            renderCBTLogs();
+            document.getElementById('cbt-form').reset();
+            alert('Đã lưu nhật ký giải tỏa cảm xúc thành công!');
+        }
+
+        function renderCBTLogs() {
+            const list = document.getElementById('cbt-logs-list');
+            list.innerHTML = '';
+            cbtLogs.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5';
+                div.innerHTML = `
+                    <div class="flex justify-between font-bold text-slate-700">
+                        <span>Kích hoạt: "${item.trigger}"</span>
+                        <span class="text-slate-400 font-normal">${item.time}</span>
+                    </div>
+                    <div class="text-rose-600">Lo âu: ${item.negative}</div>
+                    <div class="text-emerald-700">Thực tế: ${item.reality}</div>
+                    <div class="text-indigo-600 font-semibold">Hành động: ${item.action}</div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function toggleSOSModal() {
+            const modal = document.getElementById('sos-modal');
+            modal.classList.toggle('hidden');
+        }
+
+        function printPersonalSummary() {
+            window.print();
+        }
+
+        // Tự động khởi chạy khi tải trang
+        window.onload = function() {
+            calculateBudget();
+            initCountdowns();
+        };
+    </script>
+</body>
+</html>
+```
